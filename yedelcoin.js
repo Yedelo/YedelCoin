@@ -9,7 +9,7 @@ const theSafe = new LocalStore("YedelCoin", {
         amount: 1500,
         premium: true
     }
-}, "theSafe.json");
+}, "data/persistent/theSafe.json");
 const currencies = new LocalStore("YedelCoin", {
     usd: {
         symbol: "$",
@@ -21,7 +21,7 @@ const currencies = new LocalStore("YedelCoin", {
         min: 0.25,
         max: 0.50
     }
-}, "currencies.json");
+}, "data/persistent/currencies.json");
 global.theSafe = theSafe;
 const miningCooldownMap = new Map();
 
@@ -57,7 +57,6 @@ const miningCooldownMap = new Map();
     function refreshExchangeRate(currencyCode) {
         currency = currencies[currencyCode];
         currency.currentRate = randomNumber(currency.min, currency.max);
-        ChatLib.chat(`Refreshed ${currencyCode} to ${currency.currentRate}`);
     }
 
     function refreshExchangeRates() { 
@@ -79,7 +78,7 @@ registerToplevelHandler((name, args, sourceCallback, admin) => {
         if (command == key) {
             const symbol = value.symbol;
             const exchanged = round(currentYedelCoinCount * value.currentRate, 2);
-            sourceCallback(`${currentYedelCoinCount} YedelCoin${getOptionalSuffix(currentYedelCoinCount)} = ${symbol}${exchanged} (1 YedelCoin = ${symbol}${round(value.currentRate, 2)}).`);
+            sourceCallback(`${currentYedelCoinCount} YedelCoins = ${symbol}${exchanged} (1 YedelCoin = ${symbol}${round(value.currentRate, 2)}).`);
             pass = true;
         }
     });
@@ -93,18 +92,18 @@ registerToplevelHandler((name, args, sourceCallback, admin) => {
             }
             const increase = randomInt(10, 30);
             crement(name, increase);
-            sourceCallback(`You mined up ${increase} YedelCoin${getOptionalSuffix(increase)}! You now have ${theSafe[name].amount} YedelCoin${getOptionalSuffix(currentYedelCoinCount)}.`);
+            sourceCallback(`You mined up ${increase} YedelCoins! You now have ${theSafe[name].amount} YedelCoins.`);
             resetCooldown(name);
             break;
         default:
-            sourceCallback(`You currently have ${currentYedelCoinCount} YedelCoin${getOptionalSuffix(currentYedelCoinCount)}.`);
+            sourceCallback(`You currently have ${currentYedelCoinCount} YedelCoins.`);
             break;
   }
 });
 
 registerSubcommand("addcurrency", (name, args, sourceCallback, admin) => {
     if (!admin) return;
-            const currencyCode = args.get("currencyCode") || args.get(0);
+        const currencyCode = args.get("currencyCode") || args.get(0);
         const symbol = args.get("symbol") || args.get(1);
         const min = args.get("min") || args.get(2);
         const max = args.get("max") || args.get(3);
@@ -138,8 +137,4 @@ function randomInt(min, max) {
 
 function randomNumber(min, max) {
     return Math.random() * (max - min) + min;
-}
-
-function getOptionalSuffix(number) {
-    return number != 1 ? "s" : "";
 }
