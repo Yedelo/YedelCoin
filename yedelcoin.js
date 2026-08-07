@@ -38,7 +38,7 @@ const miningCooldownMap = new Map();
         theSafe[playerName].amount += amount;
     }
 
-    function getMiningCooldown(yedelCoinAmount) {
+    function getMiningCooldown(yedelCoinAmount, premium) {
         const scalingFactor = 25000;
   
         yedelCoinAmount = Math.max(0, Math.min(yedelCoinAmount, scalingFactor));
@@ -47,11 +47,15 @@ const miningCooldownMap = new Map();
 
         const result = maxRange - (maxRange - minRange) * Math.log1p(yedelCoinAmount) / Math.log1p(scalingFactor);
 
-        return Math.round(Math.max(minRange, Math.min(result, maxRange)));
+        let wouldBeFinal = Math.max(minRange, Math.min(result, maxRange));
+        if (premium) {
+            wouldBeFinal = wouldBeFinal / 1.5;
+        }
+        return Math.round(wouldBeFinal);
     }
 
     function resetCooldown(playerName) {
-        this.miningCooldownMap.set(playerName, this.getMiningCooldown(theSafe[playerName].amount));
+        this.miningCooldownMap.set(playerName, this.getMiningCooldown(theSafe[playerName].amount, theSafe[playerName].premium));
     }
 
     function refreshExchangeRate(currencyCode) {
@@ -86,14 +90,31 @@ registerToplevelHandler((name, args, sourceCallback, admin) => {
     switch (command) {
         case "mine":
             const cooldownSeconds = miningCooldownMap.get(name);
+            const premiumStatus = theSafe[name].premium ? " (premium)" : "";
             if (cooldownSeconds > 0) {
-                sourceCallback(`You're currently on cooldown! Wait ${cooldownSeconds}s to use this command again.`);
+                sourceCallback(`You're currently on cooldown! Wait ${cooldownSeconds}s to use this command again.${premiumStatus}`);
                 break;
             }
-            const increase = randomInt(10, 30);
+            let increase = randomInt(10, 30);
+            if (theSafe[name].premium) increase *= 2;
             crement(name, increase);
-            sourceCallback(`You mined up ${increase} YedelCoins! You now have ${theSafe[name].amount} YedelCoins.`);
+            sourceCallback(`You mined up ${increase} YedelCoins! You now have ${theSafe[name].amount} YedelCoins.${premiumStatus}`);
             resetCooldown(name);
+            break;
+        case "premium":
+            sourceCallback("For the low price of 1000 YedelCoins, you can buy YedelCoin Premium, which gives you 1.5x more coins and 1.5x shorter cooldown.");
+            setTimeout(() => {
+                sourceCallback("If you want to buy Premium, type !yedelcoin yesiwanttobuypremium.");
+            }, 1000);
+            break;
+        case "yesiwanttobuypremium":
+            if (theSafe[name].amount < 1000) {
+                sourceCallback("You don't have the required 1000 YedelCoins to buy Premium!");
+                return;
+            }
+            theSafe[name].amount -= 1000;
+            theSafe[name].premium = true;
+            sourceCallback("Bought YedelCoin Premium! Enjoy more coins and shorter cooldowns.");
             break;
         default:
             sourceCallback(`You currently have ${currentYedelCoinCount} YedelCoins.`);
