@@ -1,0 +1,15 @@
+{
+    "Yedel": {
+        "amount": 1500,
+        "premium": true
+    },
+    "Indisputably": {
+        "coins": 0,
+        "premium": false,
+        "amount": 79
+    },
+    "QueensLink": {
+        "amount": 39,
+        "premium": false
+    }
+}

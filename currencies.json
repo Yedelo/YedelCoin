@@ -1,0 +1,37 @@
+{
+    "usd": {
+        "symbol": "$",
+        "min": 0.25,
+        "max": 0.5,
+        "currentRate": 0.2683702287625428
+    },
+    "eur": {
+        "symbol": "€",
+        "min": 0.125,
+        "max": 0.25,
+        "currentRate": 0.20133621346386982
+    },
+    "v": {
+        "symbol": "1",
+        "min": "2",
+        "currentRate": "NaN2"
+    },
+    "vbucks": {
+        "symbol": "v",
+        "min": "1",
+        "max": "2",
+        "currentRate": "0.67864245522058231"
+    },
+    "pokecoins": {
+        "symbol": "pc",
+        "min": "10",
+        "max": "20",
+        "currentRate": "1.031236141926623610"
+    },
+    "poke": {
+        "symbol": "pc",
+        "min": "10",
+        "max": "20",
+        "currentRate": "9.8980992982165510"
+    }
+}
