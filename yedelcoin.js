@@ -72,17 +72,18 @@ const miningCooldownMap = new Map();
 
     refreshExchangeRates();
 
-registerToplevelHandler((name, args, sourceCallback, admin) => {
-    if (args.get(0) != "yedelcoin") return;
+registerToplevelHandler((source) => {
+    if (source.args.get(0) != "yedelcoin") return;
+    const name = source.name;
     validatePlayer(name);
-    const command = args.get("command") || args.get(1);
+    const command = source.args.get("command") || source.args.get(1);
     const currentYedelCoinCount = theSafe[name].amount;
     let pass;
     Object.entries(currencies).forEach(([key, value]) => {
         if (command == key) {
             const symbol = value.symbol;
             const exchanged = round(currentYedelCoinCount * value.currentRate, 2);
-            sourceCallback(`${currentYedelCoinCount} YedelCoins = ${symbol}${exchanged} (1 YedelCoin = ${symbol}${round(value.currentRate, 2)}).`);
+            source.respond(`${currentYedelCoinCount} YedelCoins = ${symbol}${exchanged} (1 YedelCoin = ${symbol}${round(value.currentRate, 2)}).`);
             pass = true;
         }
     });
@@ -92,49 +93,49 @@ registerToplevelHandler((name, args, sourceCallback, admin) => {
             const cooldownSeconds = miningCooldownMap.get(name);
             const premiumStatus = theSafe[name].premium ? " (premium)" : "";
             if (cooldownSeconds > 0) {
-                sourceCallback(`You're currently on cooldown! Wait ${cooldownSeconds}s to use this command again.${premiumStatus}`);
+                source.respond(`You're currently on cooldown! Wait ${cooldownSeconds}s to use this command again.${premiumStatus}`);
                 break;
             }
             let increase = randomInt(10, 30);
             if (theSafe[name].premium) increase *= 2;
             crement(name, increase);
-            sourceCallback(`You mined up ${increase} YedelCoins! You now have ${theSafe[name].amount} YedelCoins.${premiumStatus}`);
+            source.respond(`You mined up ${increase} YedelCoins! You now have ${theSafe[name].amount} YedelCoins.${premiumStatus}`);
             resetCooldown(name);
             break;
         case "premium":
-            sourceCallback("For the low price of 1000 YedelCoins, you can buy YedelCoin Premium, which gives you 1.5x more coins and 1.5x shorter cooldown.");
+            source.respond("For the low price of 1000 YedelCoins, you can buy YedelCoin Premium, which gives you 1.5x more coins and 1.5x shorter cooldown.");
             setTimeout(() => {
-                sourceCallback("If you want to buy Premium, type !yedelcoin yesiwanttobuypremium.");
+                source.respond("If you want to buy Premium, type !yedelcoin yesiwanttobuypremium.");
             }, 1000);
             break;
         case "yesiwanttobuypremium":
             if (theSafe[name].amount < 1000) {
-                sourceCallback("You don't have the required 1000 YedelCoins to buy Premium!");
+                source.respond("You don't have the required 1000 YedelCoins to buy Premium!");
                 return;
             }
             theSafe[name].amount -= 1000;
             theSafe[name].premium = true;
-            sourceCallback("Bought YedelCoin Premium! Enjoy more coins and shorter cooldowns.");
+            source.respond("Bought YedelCoin Premium! Enjoy more coins and shorter cooldowns.");
             break;
         default:
-            sourceCallback(`You currently have ${currentYedelCoinCount} YedelCoins.`);
+            source.respond(`You currently have ${currentYedelCoinCount} YedelCoins.`);
             break;
   }
 });
 
-registerSubcommand("addcurrency", (name, args, sourceCallback, admin) => {
-    if (!admin) return;
-        const currencyCode = args.get("currencyCode") || args.get(0);
-        const symbol = args.get("symbol") || args.get(1);
-        const min = args.get("min") || args.get(2);
-        const max = args.get("max") || args.get(3);
+registerSubcommand("addcurrency", (source) => {
+    if (!source.admin) return;
+        const currencyCode = source.args.get("currencyCode") || source.args.get(0);
+        const symbol = source.args.get("symbol") || source.args.get(1);
+        const min = source.args.get("min") || source.args.get(2);
+        const max = source.args.get("max") || source.args.get(3);
         currencies[currencyCode] = {
             symbol: symbol,
             min: Number(min),
             max: Number(max)
         }
         refreshExchangeRate(currencyCode);
-        sourceCallback(`Added currency ${currencyCode} with symbol ${symbol}, min ${min} and max ${max}!`);
+        source.respond(`Added currency ${currencyCode} with symbol ${symbol}, min ${min} and max ${max}!`);
 });
 
 register("step", () => {
