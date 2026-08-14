@@ -1,5 +1,5 @@
 import { registerSubcommand } from "../FPLanguage/commands/commands";
-import { registerToplevelHandler } from "../FPLanguage/toplevel/toplevel";
+import { registerToplevelHandler } from "../FPLanguage/commands/toplevel/toplevel";
 import { LocalStore } from "../tska/storage/LocalStore";
 
 const EXCHANGE_RATE_DELAY = 60;
